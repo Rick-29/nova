@@ -1,0 +1,16 @@
+[package]
+name = "nova-ta"
+version = "0.1.0"
+edition = "2024"
+description = "Core traits and state primitives for streaming technical-analysis indicators."
+license = "MIT"
+homepage = "https://gitlab.chipatrade.com/Rick-29/nova"
+repository = "https://gitlab.chipatrade.com/Rick-29/nova"
+documentation = "https://docs.rs/nova"
+readme = "README.md"
+keywords = ["technical-analysis", "indicators", "trading", "streaming"]
+categories = ["finance", "algorithms"]
+
+[dependencies]
+nova-ta-core = "0.1.4"
+thiserror = "2.0.21"
