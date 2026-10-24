@@ -36,7 +36,7 @@ impl<T: Num> Ker<T> {
     }
 }
 
-impl<T: Num + std::fmt::Debug> Indicator for Ker<T> {
+impl<T: Num> Indicator for Ker<T> {
     type Input = T;
     type Output = T;
     type Error = NovaError;

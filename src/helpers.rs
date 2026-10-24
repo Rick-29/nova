@@ -2,6 +2,10 @@ use nova_ta_core::{Num, Window};
 
 use crate::error::{NovaError, NovaResult};
 
+pub(crate) fn mul<T: Num>(l: &T, r: &T) -> NovaResult<T> {
+    l.mul(*r).map_err(NovaError::number)
+}
+
 pub(crate) fn add<T: Num>(l: &T, r: &T) -> NovaResult<T> {
     l.add(*r).map_err(NovaError::number)
 }
