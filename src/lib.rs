@@ -8,3 +8,4 @@ pub mod error;
 pub mod helpers;
 
 pub use filters::alma::Alma;
+pub use filters::ker::Ker;
