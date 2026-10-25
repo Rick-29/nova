@@ -1,12 +1,16 @@
 use nova_ta_core::{Indicator, Num};
 
-use crate::{Ker, error::{NovaError, NovaResult}, helpers::{add, mul, sub}};
+use crate::{
+    Ker,
+    error::{NovaError, NovaResult},
+    helpers::{add, mul, sub},
+};
 
 pub struct Kama<T: Num> {
     fast_sc: T,
     slow_sc: T,
     ker: Ker<T>,
-    prev: Option<T>
+    prev: Option<T>,
 }
 
 impl<T: Num> Kama<T> {
@@ -14,17 +18,24 @@ impl<T: Num> Kama<T> {
         NovaError::period(fast)?;
         NovaError::period(slow)?;
         if fast >= slow {
-            return Err(NovaError::InvalidInput(format!("Fast should be smaller then slow (got fast: {} and slow: {})", fast, slow)));
+            return Err(NovaError::InvalidInput(format!(
+                "Fast should be smaller then slow (got fast: {} and slow: {})",
+                fast, slow
+            )));
         }
         let ker = Ker::new(ker)?;
         let two = T::from_usize(2);
-        let fast_sc = two.div(add(&T::from_usize(fast), &T::one())?).map_err(NovaError::number)?;
-        let slow_sc = two.div(add(&T::from_usize(slow), &T::one())?).map_err(NovaError::number)?;
+        let fast_sc = two
+            .div(add(&T::from_usize(fast), &T::one())?)
+            .map_err(NovaError::number)?;
+        let slow_sc = two
+            .div(add(&T::from_usize(slow), &T::one())?)
+            .map_err(NovaError::number)?;
         Ok(Self {
             fast_sc,
             slow_sc,
             ker,
-            prev: None
+            prev: None,
         })
     }
 }
@@ -49,7 +60,10 @@ impl<T: Num> Indicator for Kama<T> {
             return Ok(input);
         }
         let ker = self.ker.update(input)?;
-        let sc_par = add(&mul(&ker, &sub(&self.fast_sc, &self.slow_sc)?)?, &self.slow_sc)?;
+        let sc_par = add(
+            &mul(&ker, &sub(&self.fast_sc, &self.slow_sc)?)?,
+            &self.slow_sc,
+        )?;
         let sc = mul(&sc_par, &sc_par)?;
         let prev = self.prev.ok_or(NovaError::Never)?;
         let kama = add(&prev, &mul(&sc, &sub(&input, &prev)?)?)?;
@@ -73,7 +87,6 @@ impl<T: Num> Indicator for Kama<T> {
         self.ker.ready() && self.prev.is_some()
     }
 }
-
 
 #[cfg(test)]
 mod tests {

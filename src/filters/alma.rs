@@ -2,7 +2,6 @@ use nova_ta_core::{Indicator, Ohlc, Real, Window};
 
 use crate::error::{NovaError, NovaResult};
 
-
 pub struct Alma<T: Real> {
     candles: Window<Ohlc<T>>,
     weights: Window<f64>,
@@ -11,13 +10,18 @@ pub struct Alma<T: Real> {
 impl<T: Real> Alma<T> {
     pub fn new(period: usize, offset: f64, sigma: u32) -> NovaResult<Self> {
         if period == 0 {
-            return Err(NovaError::InvalidPeriod)
+            return Err(NovaError::InvalidPeriod);
         }
         if !(0.0..=1.0).contains(&offset) {
-            return Err(NovaError::InvalidInput(format!("offset, value not between 0.0 and 1.0 (got `{}`)", offset)))
+            return Err(NovaError::InvalidInput(format!(
+                "offset, value not between 0.0 and 1.0 (got `{}`)",
+                offset
+            )));
         }
         if sigma == 0 {
-            return Err(NovaError::InvalidInput("Invalid value for sigma".to_string()))
+            return Err(NovaError::InvalidInput(
+                "Invalid value for sigma".to_string(),
+            ));
         }
         let candles: Window<Ohlc<T>> = Window::new(period);
         let mut weights = Window::new(period);
@@ -27,9 +31,7 @@ impl<T: Real> Alma<T> {
             let d = i as f64 - m as f64;
             weights.push((-(d * d) / (2.0 * s * s)).exp());
         }
-        Ok(
-            Self { candles, weights }
-        )
+        Ok(Self { candles, weights })
     }
 }
 

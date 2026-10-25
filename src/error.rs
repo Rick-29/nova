@@ -1,7 +1,8 @@
-
 #[derive(Debug, thiserror::Error)]
 pub enum NovaError {
-    #[error("This should never happend, if this message apears please contact Chipa Dev Team or Rick-29 on github.")]
+    #[error(
+        "This should never happend, if this message apears please contact Chipa Dev Team or Rick-29 on github."
+    )]
     Never,
     #[error("Invalid period")]
     InvalidPeriod,
@@ -23,7 +24,7 @@ impl NovaError {
 
     pub fn period(period: usize) -> NovaResult<()> {
         if period == 0 {
-            return Err(NovaError::InvalidPeriod)
+            return Err(NovaError::InvalidPeriod);
         }
         Ok(())
     }

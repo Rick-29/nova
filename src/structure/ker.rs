@@ -1,6 +1,9 @@
 use nova_ta_core::{Indicator, Num, Window};
 
-use crate::{error::{NovaError, NovaResult}, helpers::{add, sub}};
+use crate::{
+    error::{NovaError, NovaResult},
+    helpers::{add, sub},
+};
 
 /// Kaufman Efficiency Ratio (KER).
 ///
@@ -19,7 +22,7 @@ use crate::{error::{NovaError, NovaResult}, helpers::{add, sub}};
 /// - Values closer to 1 indicate a more directional movement.
 /// - Values closer to 0 indicate more back-and-forth movement.
 pub struct Ker<T: Num> {
-    items: Window<T>
+    items: Window<T>,
 }
 
 impl<T: Num> Ker<T> {
@@ -28,11 +31,9 @@ impl<T: Num> Ker<T> {
     /// Returns an error if the period is invalid.
     pub fn new(period: usize) -> NovaResult<Self> {
         NovaError::period(period)?;
-        Ok(
-            Self {
-                items: Window::new(period)
-            }
-        )
+        Ok(Self {
+            items: Window::new(period),
+        })
     }
 }
 
@@ -45,7 +46,7 @@ impl<T: Num> Indicator for Ker<T> {
     ///
     /// On the first call, returns `T::zero()` without storing the input,
     /// following the current implementation's initialization convention.
-    /// 
+    ///
     /// On flat window, (volatility = 0) then the indicator returns `T::zero()` instead of an error.
     fn update(&mut self, input: Self::Input) -> Result<Self::Output, Self::Error> {
         if self.items.is_empty() {
@@ -66,7 +67,7 @@ impl<T: Num> Indicator for Ker<T> {
         }
         dir.div(vol).map_err(NovaError::number)
     }
-    
+
     fn ready(&self) -> bool {
         self.items.is_full()
     }
@@ -75,7 +76,6 @@ impl<T: Num> Indicator for Ker<T> {
         self.items.clear();
     }
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -157,10 +157,7 @@ mod tests {
             let result = indicator.update(value).unwrap();
 
             if result.is_finite() {
-                assert!(
-                    (0.0..=1.0).contains(&result),
-                    "KER out of range: {result}"
-                );
+                assert!((0.0..=1.0).contains(&result), "KER out of range: {result}");
             }
         }
     }

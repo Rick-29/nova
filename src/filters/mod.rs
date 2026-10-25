@@ -1,3 +1,3 @@
 pub mod alma;
-pub mod ker;
 pub mod kama;
+pub mod lsma;

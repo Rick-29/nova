@@ -8,8 +8,9 @@ pub mod error;
 pub mod helpers;
 
 pub use filters::alma::Alma;
-pub use filters::ker::Ker;
 pub use filters::kama::Kama;
+pub use filters::lsma::Lsma;
 
 /// Reimports
-pub use nova_ta_core::{Ohlc, Num, Real};
+pub use nova_ta_core::{Num, Ohlc, Real};
+pub use structure::ker::Ker;
