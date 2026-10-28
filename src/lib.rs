@@ -40,7 +40,9 @@ pub use filters::alma::Alma;
 pub use filters::kama::Kama;
 pub use filters::lsma::Lsma;
 pub use filters::ultimate_smoother::UltimateSmoother;
+pub use filters::wma::{Wma, LinearWma};
+
+pub use structure::ker::Ker;
 
 /// Re-exports from `nova_ta_core` used in indicator signatures.
 pub use nova_ta_core::{Num, Ohlc, Real};
-pub use structure::ker::Ker;

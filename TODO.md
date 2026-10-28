@@ -16,14 +16,14 @@ Planned layout (`src/`): `filters/`, `volatility/`, `structure/`, `statistics/`.
 ## Filters (`src/filters/`)
 
 - [x] **ALMA** (Arnaud Legoux Moving Average): `src/filters/alma.rs`, `m = floor(offset * (period - 1))`.
-- [ ] **KAMA** (Kaufman Adaptive Moving Average): smoothing speed driven by the Efficiency Ratio. Depends on ER.
-- [ ] **LSMA** (Least Squares Moving Average): endpoint of a rolling linear regression.
+- [x] **KAMA** (Kaufman Adaptive Moving Average): smoothing speed driven by the Efficiency Ratio. Depends on ER.
+- [x] **LSMA** (Least Squares Moving Average): endpoint of a rolling linear regression.
 - [ ] **WMA** (Weighted Moving Average): linear weights over a finite window; baseline for custom weight profiles.
 - [ ] **Gaussian filter**: decide between finite-window and recursive form before implementing.
 
 ## Structure (`src/structure/`)
 
-- [ ] **Efficiency Ratio (ER)**: net directional movement divided by total absolute movement over a window. Useful alone as a trend-quality feature and as a KAMA component.
+- [x] **Efficiency Ratio (ER)**: net directional movement divided by total absolute movement over a window. Useful alone as a trend-quality feature and as a KAMA component.
 - [ ] **Vertical Horizontal Filter (VHF)**: range covered over a window relative to the sum of individual movements; separates directional from choppy phases.
 - [ ] **Donchian Channels** and prior-window breakout: rolling high/low. Decide and document whether the current candle is included (prior-candle semantics).
 

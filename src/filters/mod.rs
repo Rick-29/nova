@@ -14,4 +14,5 @@
 pub mod alma;
 pub mod kama;
 pub mod lsma;
+pub mod wma;
 pub mod ultimate_smoother;
