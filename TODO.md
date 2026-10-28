@@ -18,7 +18,7 @@ Planned layout (`src/`): `filters/`, `volatility/`, `structure/`, `statistics/`.
 - [x] **ALMA** (Arnaud Legoux Moving Average): `src/filters/alma.rs`, `m = floor(offset * (period - 1))`.
 - [x] **KAMA** (Kaufman Adaptive Moving Average): smoothing speed driven by the Efficiency Ratio. Depends on ER.
 - [x] **LSMA** (Least Squares Moving Average): endpoint of a rolling linear regression.
-- [ ] **WMA** (Weighted Moving Average): linear weights over a finite window; baseline for custom weight profiles.
+- [x] **WMA** (Weighted Moving Average): linear weights over a finite window; baseline for custom weight profiles.
 - [ ] **Gaussian filter**: decide between finite-window and recursive form before implementing.
 
 ## Structure (`src/structure/`)
