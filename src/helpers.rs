@@ -1,3 +1,4 @@
+#![allow(unused)]
 use nova_ta_core::{Num, Window};
 
 use crate::error::{NovaError, NovaResult};

@@ -1,10 +1,14 @@
-use nova_ta_core::{Indicator, Num, Window};
+use nova_ta_core::{Indicator, Num, Window, math_support, };
 
 use crate::{
     error::{NovaError, NovaResult},
-    helpers::{add, div, mul, sub},
+    helpers::add,
 };
 
+// math_impl! macro
+// Fn(Erreur) -> CustomError, T
+math_support!(math, NovaError::number, T);
+// math!(expr) -> math_impl(NovaErro::number, T, expr)
 /// Least Squares Moving Average (LSMA).
 ///
 /// Fits a least-squares linear regression to the values in the rolling window
@@ -73,9 +77,9 @@ impl<T: Num + std::fmt::Debug> Indicator for Lsma<T> {
         }
         let n = self.candles.len();
         let x_usum = n * (n + 1) / 2;
-        let x_sum = T::from_usize(x_usum);
-        let x_sum2 = T::from_usize(x_usum * x_usum);
-        let x_sq2 = T::from_usize(n * (n + 1) * (2 * n + 1) / 6);
+        let x_sum = math!(x_usum as usize);
+        let x_sum2 = math!((x_usum * x_usum) as usize);
+        let x_sq2 = math!((n * (n + 1) * (2 * n + 1) / 6) as usize);
         let y_sum = self
             .candles
             .iter()
@@ -84,18 +88,21 @@ impl<T: Num + std::fmt::Debug> Indicator for Lsma<T> {
         let mut xy_sum = T::zero();
         
         for (i, &value) in self.candles.iter().enumerate() {
-            let x = T::from_usize(i + 1);
-            xy_sum = add(&xy_sum, &mul(&x, &value)?)?;
+            let x = math!((i + 1) as usize);
+            xy_sum = math!(xy_sum + x * value);
+            // xy_sum = add(&xy_sum, &mul(&x, &value)?)?;
         }
 
-        let n_t = T::from_usize(n);
-        let m = div(
-            &sub(&mul(&n_t, &xy_sum)?, &mul(&x_sum, &y_sum)?)?,
-            &sub(&mul(&n_t, &x_sq2)?, &x_sum2)?,
-        )?;
-        let b = div(&sub(&y_sum, &mul(&m, &x_sum)?)?, &n_t)?;
-        
-        add(&mul(&m, &n_t)?, &b)
+        let n_t = math!(n as usize);
+        let m = math!(((n_t * xy_sum) - (x_sum * y_sum)) / (n_t * x_sq2 - x_sum2));
+        // let m = div(
+        //     &sub(&mul(&n_t, &xy_sum)?, &mul(&x_sum, &y_sum)?)?,
+        //     &sub(&mul(&n_t, &x_sq2)?, &x_sum2)?,
+        // )?;
+        let b = math!((y_sum - m * x_sum) / n_t);
+        // let b = div(&sub(&y_sum, &mul(&m, &x_sum)?)?, &n_t)?;
+        Ok(math!(m * n_t + b))
+        // add(&mul(&m, &n_t)?, &b)
     }
 
     /// Returns `true` when the rolling window contains `period` observations.
