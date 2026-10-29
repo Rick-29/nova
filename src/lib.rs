@@ -44,5 +44,6 @@ pub use filters::wma::{Wma, LinearWma};
 
 pub use structure::ker::Ker;
 
+pub use statistics::cti::Cti;
 /// Re-exports from `nova_ta_core` used in indicator signatures.
 pub use nova_ta_core::{Num, Ohlc, Real};
