@@ -1,3 +1,4 @@
+use nova_bindings_macros::{Bindings, bindings};
 use nova_ta_core::{Indicator, Num};
 
 use crate::{
@@ -6,6 +7,8 @@ use crate::{
     helpers::{add, mul, sub},
 };
 
+#[derive(Bindings)]
+#[bindings(error = NovaError)]
 pub struct Kama<T: Num> {
     fast_sc: T,
     slow_sc: T,
@@ -13,6 +16,7 @@ pub struct Kama<T: Num> {
     prev: Option<T>,
 }
 
+#[bindings]
 impl<T: Num> Kama<T> {
     pub fn new(fast: usize, slow: usize, ker: usize) -> NovaResult<Self> {
         NovaError::period(fast)?;
@@ -40,6 +44,7 @@ impl<T: Num> Kama<T> {
     }
 }
 
+#[bindings]
 impl<T: Num> Indicator for Kama<T> {
     type Input = T;
     type Output = T;

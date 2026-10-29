@@ -1,3 +1,4 @@
+use nova_bindings_macros::{Bindings, bindings};
 use nova_ta_core::{Indicator, Num, Window, math_support, };
 
 use crate::{
@@ -9,6 +10,7 @@ use crate::{
 // Fn(Erreur) -> CustomError, T
 math_support!(math, NovaError::number, T);
 // math!(expr) -> math_impl(NovaErro::number, T, expr)
+
 /// Least Squares Moving Average (LSMA).
 ///
 /// Fits a least-squares linear regression to the values in the rolling window
@@ -39,10 +41,13 @@ math_support!(math, NovaError::number, T);
 ///
 /// Use [`Indicator::ready`] to determine when the configured period has been
 /// reached.
+#[derive(Bindings)]
+#[bindings(error = NovaError)]
 pub struct Lsma<T: Num> {
     candles: Window<T>,
 }
 
+#[bindings]
 impl<T: Num> Lsma<T> {
     /// Creates an LSMA indicator with the specified lookback period.
     ///
@@ -61,7 +66,8 @@ impl<T: Num> Lsma<T> {
     }
 }
 
-impl<T: Num + std::fmt::Debug> Indicator for Lsma<T> {
+#[bindings]
+impl<T: Num> Indicator for Lsma<T> {
     type Input = T;
     type Output = T;
     type Error = NovaError;

@@ -1,3 +1,5 @@
+/// Error returned by Nova indicators.
+#[nova_bindings_macros::bindings_error]
 #[derive(Debug, thiserror::Error)]
 pub enum NovaError {
     #[error(

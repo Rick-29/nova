@@ -1,0 +1,7 @@
+error: `Sma` does not declare an override for `update`
+
+       help: add `overrides(update)` to `#[bindings(...)]` on `Sma` so the default binding is not generated
+  --> tests/ui/fail/undeclared_override.rs:53:21
+   |
+53 | #[bindings(method = update)]
+   |                     ^^^^^^

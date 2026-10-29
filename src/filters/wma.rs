@@ -1,3 +1,4 @@
+use nova_bindings_macros::{Bindings, bindings};
 use nova_ta_core::{Indicator, Num, Window, math_support};
 
 use crate::error::{NovaError, NovaResult};
@@ -104,10 +105,13 @@ impl<T: Num> Indicator for Wma<T> {
 ///
 /// The indicator uses the same partial-window behavior as [`Wma`]. It produces
 /// outputs before the full period has been received.
+#[derive(Bindings)]
+#[bindings(error = NovaError)]
 pub struct LinearWma<T: Num> {
     wma: Wma<T>
 }
 
+#[bindings]
 impl<T: Num> LinearWma<T> {
     /// Creates a linear weighted moving average with the given period.
     ///
@@ -125,6 +129,7 @@ impl<T: Num> LinearWma<T> {
     }
 }
 
+#[bindings]
 impl<T: Num> Indicator for LinearWma<T> {
     type Input = T;
     type Output = T;

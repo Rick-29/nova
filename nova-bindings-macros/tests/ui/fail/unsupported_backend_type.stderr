@@ -1,0 +1,7 @@
+error: type `u64` is not supported by the `napi` backend
+
+       help: N-API numbers support bool, f64, i32, u32, i64, usize and isize
+  --> tests/ui/fail/unsupported_backend_type.rs:34:22
+   |
+34 |     pub fn new(seed: u64) -> Self {
+   |                      ^^^

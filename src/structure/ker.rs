@@ -1,3 +1,4 @@
+use nova_bindings_macros::{Bindings, bindings};
 use nova_ta_core::{Indicator, Num, Window};
 
 use crate::{
@@ -21,10 +22,13 @@ use crate::{
 /// The result is generally between 0 and 1 when volatility is nonzero:
 /// - Values closer to 1 indicate a more directional movement.
 /// - Values closer to 0 indicate more back-and-forth movement.
+#[derive(Bindings)]
+#[bindings(error = NovaError)]
 pub struct Ker<T: Num> {
     items: Window<T>,
 }
 
+#[bindings]
 impl<T: Num> Ker<T> {
     /// Creates a KER indicator with the specified lookback period.
     ///
@@ -37,6 +41,7 @@ impl<T: Num> Ker<T> {
     }
 }
 
+#[bindings]
 impl<T: Num> Indicator for Ker<T> {
     type Input = T;
     type Output = T;

@@ -1,0 +1,15 @@
+error: type `Candle<T>` cannot cross the binding boundary
+
+       help: supported types: bool, f32, f64, integer primitives, String, the indicator's type parameters, and Vec<_> / Option<_> of those
+  --> tests/ui/fail/invalid_update.rs:43:18
+   |
+43 |     type Input = Candle<T>;
+   |                  ^^^^^^
+
+error: unsupported `update` output `Vec<type parameter>`
+
+       help: the standard `update` binding takes and returns one scalar numeric value (a type parameter or `f64`); bind other shapes with `overrides(update)`
+  --> tests/ui/fail/invalid_update.rs:46:49
+   |
+46 |     fn update(&mut self, input: Self::Input) -> Result<Self::Output, MyError> {
+   |                                                 ^^^^^^

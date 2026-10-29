@@ -33,6 +33,9 @@ pub(crate) mod volatility;
 
 /// Error type and result alias shared by all indicators.
 pub mod error;
+/// Python extension module (feature `python`).
+#[cfg(feature = "python")]
+pub mod python;
 /// Minimal functions that might be useful.
 pub mod helpers;
 
@@ -45,5 +48,8 @@ pub use filters::wma::{Wma, LinearWma};
 pub use structure::ker::Ker;
 
 pub use statistics::cti::Cti;
+#[cfg(feature = "uniffi")]
+uniffi::setup_scaffolding!();
+
 /// Re-exports from `nova_ta_core` used in indicator signatures.
 pub use nova_ta_core::{Num, Ohlc, Real};

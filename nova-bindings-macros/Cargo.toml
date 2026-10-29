@@ -1,0 +1,24 @@
+[package]
+name = "nova-bindings-macros"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.88"
+description = "Procedural macros that generate Python (PyO3), UniFFI, WebAssembly and Node.js bindings for Nova technical-analysis indicators."
+license = "MIT"
+homepage = "https://gitlab.chipatrade.com/Rick-29/nova"
+repository = "https://gitlab.chipatrade.com/Rick-29/nova"
+documentation = "https://docs.rs/nova-bindings-macros"
+readme = "README.md"
+keywords = ["technical-analysis", "bindings", "pyo3", "uniffi", "proc-macro"]
+categories = ["development-tools::procedural-macro-helpers", "development-tools::ffi", "finance"]
+include = ["src/**/*.rs", "tests/**/*", "Cargo.toml", "README.md", "LICENSE"]
+
+[lib]
+proc-macro = true
+
+[dependencies]
+syn = { version = "2.0.100", features = ["full", "visit-mut"] }
+zyn = "0.5.4"
+
+[dev-dependencies]
+trybuild = "1.0.105"

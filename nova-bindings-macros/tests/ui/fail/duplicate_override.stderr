@@ -1,0 +1,13 @@
+error[E0119]: conflicting implementations of trait `__NovaBindingsSmaUpdatePython` for type `()`
+  --> tests/ui/fail/duplicate_override.rs:26:10
+   |
+26 | #[derive(Bindings)]
+   |          ^^^^^^^^
+   |          |
+   |          first implementation here
+   |          conflicting implementation for `()`
+...
+60 | #[bindings(method = update)]
+   | ---------------------------- in this attribute macro expansion
+   |
+   = note: this error originates in the macro `::nova_bindings_macros::__bindings_impl` which comes from the expansion of the attribute macro `bindings` (in Nightly builds, run with -Z macro-backtrace for more info)

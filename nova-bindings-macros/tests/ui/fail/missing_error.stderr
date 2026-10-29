@@ -1,0 +1,15 @@
+error: missing required argument `error`
+
+       help: name the error type exported to foreign languages, e.g. `#[bindings(error = NovaError)]`
+  --> tests/ui/fail/missing_error.rs:27:1
+   |
+27 | #[bindings(backends(python))]
+   | ^
+
+warning: unused import: `bindings`
+ --> tests/ui/fail/missing_error.rs:3:38
+  |
+3 | use nova_bindings_macros::{Bindings, bindings, bindings_error};
+  |                                      ^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default

@@ -1,0 +1,68 @@
+error[E0277]: `Sma` has no `update` binding for backend `python`
+  --> tests/ui/fail/missing_methods.rs:26:10
+   |
+26 | #[derive(Bindings)]
+   |          ^^^^^^^^ required by `#[derive(Bindings)]`
+   |
+   = help: the trait `__NovaBindingsSmaUpdatePython` is not implemented for `()`
+   = note: annotate the `Indicator` impl of `Sma` with `#[bindings]`
+help: this trait has no implementations, consider adding one
+  --> tests/ui/fail/missing_methods.rs:26:10
+   |
+26 | #[derive(Bindings)]
+   |          ^^^^^^^^
+note: required by a bound in `_::{closure#0}::__nova_bindings_assert`
+  --> tests/ui/fail/missing_methods.rs:28:12
+   |
+26 | #[derive(Bindings)]
+   |          -------- required by a bound in this function
+27 | #[bindings(error = MyError, backends(python))]
+28 | pub struct Sma<T> {
+   |            ^^^ required by this bound in `__nova_bindings_assert`
+   = note: this error originates in the derive macro `Bindings` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: `Sma` has no `reset` binding for backend `python`
+  --> tests/ui/fail/missing_methods.rs:26:10
+   |
+26 | #[derive(Bindings)]
+   |          ^^^^^^^^ required by `#[derive(Bindings)]`
+   |
+   = help: the trait `__NovaBindingsSmaResetPython` is not implemented for `()`
+   = note: annotate the `Indicator` impl of `Sma` with `#[bindings]`
+help: this trait has no implementations, consider adding one
+  --> tests/ui/fail/missing_methods.rs:26:10
+   |
+26 | #[derive(Bindings)]
+   |          ^^^^^^^^
+note: required by a bound in `_::{closure#0}::__nova_bindings_assert`
+  --> tests/ui/fail/missing_methods.rs:28:12
+   |
+26 | #[derive(Bindings)]
+   |          -------- required by a bound in this function
+27 | #[bindings(error = MyError, backends(python))]
+28 | pub struct Sma<T> {
+   |            ^^^ required by this bound in `__nova_bindings_assert`
+   = note: this error originates in the derive macro `Bindings` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: `Sma` has no `ready` binding for backend `python`
+  --> tests/ui/fail/missing_methods.rs:26:10
+   |
+26 | #[derive(Bindings)]
+   |          ^^^^^^^^ required by `#[derive(Bindings)]`
+   |
+   = help: the trait `__NovaBindingsSmaReadyPython` is not implemented for `()`
+   = note: annotate the `Indicator` impl of `Sma` with `#[bindings]`
+help: this trait has no implementations, consider adding one
+  --> tests/ui/fail/missing_methods.rs:26:10
+   |
+26 | #[derive(Bindings)]
+   |          ^^^^^^^^
+note: required by a bound in `_::{closure#0}::__nova_bindings_assert`
+  --> tests/ui/fail/missing_methods.rs:28:12
+   |
+26 | #[derive(Bindings)]
+   |          -------- required by a bound in this function
+27 | #[bindings(error = MyError, backends(python))]
+28 | pub struct Sma<T> {
+   |            ^^^ required by this bound in `__nova_bindings_assert`
+   = note: this error originates in the derive macro `Bindings` (in Nightly builds, run with -Z macro-backtrace for more info)

@@ -1,0 +1,15 @@
+error: type `&str` cannot cross the binding boundary
+
+       help: supported types: bool, f32, f64, integer primitives, String, the indicator's type parameters, and Vec<_> / Option<_> of those
+  --> tests/ui/fail/invalid_constructor.rs:34:37
+   |
+34 |     pub fn new(period: usize, name: &str) -> Result<usize, MyError> {
+   |                                     ^
+
+error: the binding constructor must return the indicator
+
+       help: return `Self` or `Result<Self, E>`
+  --> tests/ui/fail/invalid_constructor.rs:34:46
+   |
+34 |     pub fn new(period: usize, name: &str) -> Result<usize, MyError> {
+   |                                              ^^^^^^

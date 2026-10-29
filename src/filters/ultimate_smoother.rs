@@ -1,3 +1,4 @@
+use nova_bindings_macros::{Bindings, bindings};
 use nova_ta_core::{Indicator, Real, Window, real_support};
 
 use crate::error::{NovaResult, NovaError};
@@ -63,6 +64,8 @@ real_support!(real, NovaError::number, R);
 ///
 /// Construction returns an error if the period is invalid or coefficient
 /// calculations fail. Updates can return an error if numeric operations fail.
+#[derive(Bindings)]
+#[bindings(error = NovaError, python(update = both))]
 pub struct UltimateSmoother<R: Real> {
     c1: R,
     c2: R,
@@ -72,6 +75,7 @@ pub struct UltimateSmoother<R: Real> {
 }
 
 
+#[bindings]
 impl<R: Real> UltimateSmoother<R> {
     /// Creates an Ultimate Smoother with the specified period.
     ///
@@ -106,6 +110,7 @@ impl<R: Real> UltimateSmoother<R> {
     }
 }
 
+#[bindings]
 impl<R: Real> Indicator for UltimateSmoother<R> {
     type Input = R;
     type Output = R;

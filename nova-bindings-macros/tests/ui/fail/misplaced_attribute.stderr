@@ -1,0 +1,23 @@
+error: `#[bindings]` goes on impl blocks
+
+       help: on the indicator struct, use `#[derive(Bindings)]` with `#[bindings(error = MyError)]`
+  --> tests/ui/fail/misplaced_attribute.rs:26:1
+   |
+26 | #[bindings]
+   | ^^^^^^^^^^^
+   |
+   = note: this error originates in the attribute macro `bindings` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: cannot find macro `__nova_bindings_Sma` in this scope
+  --> tests/ui/fail/misplaced_attribute.rs:30:18
+   |
+30 | impl Unknown for Sma {}
+   |                  ^^^
+
+warning: unused import: `Bindings`
+ --> tests/ui/fail/misplaced_attribute.rs:3:28
+  |
+3 | use nova_bindings_macros::{Bindings, bindings, bindings_error};
+  |                            ^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default

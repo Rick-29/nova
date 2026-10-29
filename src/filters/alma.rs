@@ -1,12 +1,16 @@
-use nova_ta_core::{Indicator, Ohlc, Real, Window};
+use nova_bindings_macros::{Bindings, bindings};
+use nova_ta_core::{Indicator, Real, Window};
 
 use crate::error::{NovaError, NovaResult};
 
+#[derive(Bindings)]
+#[bindings(error= NovaError)]
 pub struct Alma<T: Real> {
-    candles: Window<Ohlc<T>>,
+    candles: Window<T>,
     weights: Window<f64>,
 }
 
+#[bindings]
 impl<T: Real> Alma<T> {
     pub fn new(period: usize, offset: f64, sigma: u32) -> NovaResult<Self> {
         if period == 0 {
@@ -23,7 +27,7 @@ impl<T: Real> Alma<T> {
                 "Invalid value for sigma".to_string(),
             ));
         }
-        let candles: Window<Ohlc<T>> = Window::new(period);
+        let candles: Window<T> = Window::new(period);
         let mut weights = Window::new(period);
         let m = (offset * (period - 1) as f64).floor() as usize;
         let s = period as f64 / sigma as f64;
@@ -35,8 +39,9 @@ impl<T: Real> Alma<T> {
     }
 }
 
+#[bindings]
 impl<T: Real> Indicator for Alma<T> {
-    type Input = Ohlc<T>;
+    type Input = T;
     type Output = T;
     type Error = NovaError;
 
@@ -50,7 +55,7 @@ impl<T: Real> Indicator for Alma<T> {
         for (candle, w) in self.candles.rev_iter().zip(self.weights.rev_iter()) {
             let w = T::from_f64(*w).map_err(NovaError::number)?;
             sum = sum
-                .add(candle.close.mul(w).map_err(NovaError::number)?)
+                .add(candle.mul(w).map_err(NovaError::number)?)
                 .map_err(NovaError::number)?;
             weight_sum = weight_sum.add(w).map_err(NovaError::number)?;
         }
@@ -70,8 +75,8 @@ impl<T: Real> Indicator for Alma<T> {
 mod tests {
     use super::*;
 
-    fn bar(c: f64) -> Ohlc<f64> {
-        Ohlc::prices(c, c, c, c)
+    fn bar(c: f64) -> f64 {
+        c
     }
 
     #[test]

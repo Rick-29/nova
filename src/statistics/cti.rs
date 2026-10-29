@@ -1,3 +1,4 @@
+use nova_bindings_macros::{Bindings, bindings};
 use nova_ta_core::{Indicator, Num, Window, math_support};
 
 use crate::{error::{NovaError, NovaResult}, helpers::{sum, w_sum}};
@@ -42,11 +43,14 @@ math_support!(math, NovaError::number, T);
 ///
 /// If the price values have zero variance, correlation is undefined.
 /// This implementation returns zero by convention in that case.
+#[derive(Bindings)]
+#[bindings(error = NovaError)]
 pub struct Cti<T: Num> {
     x: Window<T>,
     y: Window<T>,
 }
 
+#[bindings]
 impl<T: Num> Cti<T> {
     /// Creates a CTI indicator with the specified lookback period.
     ///
@@ -74,6 +78,7 @@ impl<T: Num> Cti<T> {
     }
 }
 
+#[bindings]
 impl<T: Num> Indicator for Cti<T> {
     type Input = T;
     type Output = T;

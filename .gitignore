@@ -1,2 +1,7 @@
 /target
 Cargo.lock
+.venv/
+__pycache__/
+*.pyd
+/bindings
+.mypy_cache

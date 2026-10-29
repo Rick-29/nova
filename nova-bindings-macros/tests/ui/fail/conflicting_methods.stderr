@@ -1,0 +1,22 @@
+error[E0119]: conflicting implementations of trait `__NovaBindingsSmaNewPython` for type `()`
+  --> tests/ui/fail/conflicting_methods.rs:26:10
+   |
+26 | #[derive(Bindings)]
+   |          ^^^^^^^^
+   |          |
+   |          first implementation here
+   |          conflicting implementation for `()`
+...
+39 | #[bindings]
+   | ----------- in this attribute macro expansion
+   |
+   = note: this error originates in the macro `::nova_bindings_macros::__bindings_impl` which comes from the expansion of the attribute macro `bindings` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0592]: duplicate definitions with name `new`
+  --> tests/ui/fail/conflicting_methods.rs:34:5
+   |
+34 |     pub fn new() -> Self {
+   |     ^^^^^^^^^^^^^^^^^^^^ duplicate definitions for `new`
+...
+41 |     pub fn new() -> Self {
+   |     -------------------- other definition for `new`

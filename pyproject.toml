@@ -1,0 +1,16 @@
+[build-system]
+requires = ["maturin>=1.9,<2"]
+build-backend = "maturin"
+
+[project]
+name = "nova-ta"
+description = "Stateful technical-analysis indicators for real-time data."
+requires-python = ">=3.9"
+license = "MIT"
+dynamic = ["version"]
+
+[tool.maturin]
+features = ["python", "pyo3/extension-module"]
+bindings = "pyo3"
+module-name = "nova_ta"
+python-source = "python"
