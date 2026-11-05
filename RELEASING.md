@@ -44,9 +44,18 @@ target can declare the executables it `requires`.
 | `kotlin` | uniffi-bindgen (built from this repo) | Gradle project, JNA, library under `src/main/resources/<os-arch>/` |
 | `swift` | uniffi-bindgen | SwiftPM layout; XCFramework steps run on macOS only |
 | `ruby` | uniffi-bindgen | gem layout with `nova_ta.gemspec` |
-| `java` | [uniffi-bindgen-java](https://github.com/IronCoreLabs/uniffi-bindgen-java) | JDK 22+ FFM API, no JNA. `cargo install uniffi-bindgen-java --git https://github.com/IronCoreLabs/uniffi-bindgen-java` |
-| `cpp` | [uniffi-bindgen-cpp](https://github.com/NordSecurity/uniffi-bindgen-cpp) | **disabled**: newest release targets UniFFI 0.31, this crate emits 0.32 metadata |
+| `go` | [uniffi-bindgen-go](https://github.com/NordSecurity/uniffi-bindgen-go) | cgo package; generated code is also written to the tracked `go/nova_ta/` so `go get` works from the tag. `cargo install uniffi-bindgen-go --git https://github.com/NordSecurity/uniffi-bindgen-go --tag v0.7.1+v0.31.0` |
+| `cpp` | [uniffi-bindgen-cpp](https://github.com/NordSecurity/uniffi-bindgen-cpp) | C++20 sources + CMake project. `cargo install uniffi-bindgen-cpp --git https://github.com/NordSecurity/uniffi-bindgen-cpp --tag v0.10.0+v0.31.0` |
+| `java` | [uniffi-bindgen-java](https://github.com/IronCoreLabs/uniffi-bindgen-java) | **disabled**: needs UniFFI 0.32 metadata, the crate pins 0.31 for Go and C++ |
 | `python-uniffi`, `wasm`, `node` | see COMPILE.md | disabled by default; `cargo xtask build -t wasm` builds one anyway |
+
+**UniFFI version.** Third-party generators are built against one UniFFI release, encoded in
+their tag (`+v0.31.0`). The `uniffi` dependency in `Cargo.toml` is pinned to the version the
+enabled generators support; bump them together.
+
+**Go publishing.** Go has no registry: `go get` fetches the module from the git tag. That is
+why the `go` target also writes into the tracked `go/nova_ta/` directory, and why `publish`
+refuses to tag when the build changed tracked files: regenerate, commit, push, then publish.
 
 To add a language, add a `[[target]]` block. The placeholders (`{version}`, `{lib}`,
 `{out}`, `{platform}`, ...) are documented at the top of `release.toml`. Any generator

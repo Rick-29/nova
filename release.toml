@@ -94,8 +94,12 @@ steps = [
   { copy = "packaging/ruby/nova_ta.gemspec", to = "{out}/" },
 ]
 artifacts = ["{out}/lib/nova_ta.rb"]
-# To push to rubygems.org, build the gem on the release machine and uncomment:
-# publish = [{ run = "gem build nova_ta.gemspec", cwd = "{out}" }, { run = "gem push nova_ta-{version}.gem", cwd = "{out}" }]
+# Platform gem (see the gemspec): `gem signin` once, then publish builds and pushes it.
+# Disable by commenting the line or running `cargo xtask publish` after removing it.
+publish = [
+  { run = "gem build nova_ta.gemspec --output nova_ta-{version}.gem", cwd = "{out}" },
+  { run = "gem push nova_ta-{version}.gem", cwd = "{out}" },
+]
 
 [[target]]
 name = "python-uniffi"
@@ -109,8 +113,12 @@ artifacts = ["{out}/nova_ta.py"]
 
 # Java via uniffi-bindgen-java (IronCoreLabs). Uses the JDK 22+ FFM API, no JNA.
 #   cargo install uniffi-bindgen-java --git https://github.com/IronCoreLabs/uniffi-bindgen-java
+# DISABLED: the current uniffi-bindgen-java release reads UniFFI 0.32 metadata only
+# ("Unexpected metadata type code" on 0.31), while the Go and C++ generators need 0.31.
+# The crate pins uniffi 0.31 for Go + C++; re-enable Java when the generators converge.
 [[target]]
 name = "java"
+enabled = false
 requires = ["uniffi-bindgen-java"]
 version_files = [{ path = "packaging/java/build.gradle.kts", pattern = 'version = "{version}"' }]
 steps = [
@@ -123,14 +131,37 @@ steps = [
 ]
 artifacts = ["{out}/src/main/java/uniffi/nova_ta/*.java"]
 
+# Go via uniffi-bindgen-go (NordSecurity). cgo package; the consumer supplies the
+# native library through CGO_LDFLAGS (see packaging/go/README.md).
+# Go has no registry: `go get` reads the module from the git tag, so the generated
+# package is ALSO written to the tracked go/nova_ta/ directory. Commit it before publishing.
+# The tag suffix (+v0.31.0) must match the `uniffi` version in Cargo.toml.
+#   cargo install uniffi-bindgen-go --git https://github.com/NordSecurity/uniffi-bindgen-go --tag v0.7.1+v0.31.0
+[[target]]
+name = "go"
+requires = ["uniffi-bindgen-go"]
+version_files = [{ path = "packaging/go/README.md", pattern = 'go/nova_ta@v{version}' }]
+steps = [
+  "cargo rustc --release --lib --no-default-features --features uniffi --crate-type cdylib",
+  { mkdir = "{out}/lib" },
+  { copy = "{lib}", to = "{out}/lib/" },
+  { copy = "{lib_import}", to = "{out}/lib/", optional = true },
+  # --no-format keeps the output identical on machines without a Go toolchain.
+  "uniffi-bindgen-go {out}/lib/{lib_file} --out-dir {out} --no-format",
+  { copy = "packaging/go/link.go", to = "{out}/nova_ta/" },
+  { copy = "packaging/go/README.md", to = "{out}/" },
+  # tracked copy used by `go get github.com/Rick-29/nova/go/nova_ta@{tag}`
+  { remove = "go/nova_ta" },
+  { copy = "{out}/nova_ta", to = "go/nova_ta" },
+  { copy = "packaging/go/README.md", to = "go/" },
+]
+artifacts = ["{out}/nova_ta/nova_ta.go", "{out}/nova_ta/nova_ta.h", "go/nova_ta/nova_ta.go"]
+
 # C++ via uniffi-bindgen-cpp (NordSecurity). Generates <lib>.hpp / <lib>.cpp (C++20).
+# The tag suffix (+v0.31.0) must match the `uniffi` version in Cargo.toml.
 #   cargo install uniffi-bindgen-cpp --git https://github.com/NordSecurity/uniffi-bindgen-cpp --tag v0.10.0+v0.31.0
-# DISABLED: the newest release targets UniFFI 0.31 and cannot read the 0.32 metadata
-# this crate emits ("invalid utf-8 sequence" while extracting metadata). Flip to
-# `enabled = true` once a UniFFI 0.32 tag exists, or run `cargo xtask build -t cpp`.
 [[target]]
 name = "cpp"
-enabled = false
 requires = ["uniffi-bindgen-cpp"]
 version_files = [{ path = "packaging/cpp/CMakeLists.txt", pattern = 'project(nova_ta VERSION {version}' }]
 steps = [

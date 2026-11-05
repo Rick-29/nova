@@ -423,6 +423,27 @@ fn publish(cfg: &Config, vars: &Vars, args: &PublishArgs) -> Result<()> {
         build(cfg, vars, &BuildArgs::default())?;
     }
 
+    header("post-build sanity");
+    let stale: Vec<String> = fs::read_dir(&cfg.project.dist)?
+        .filter_map(Result::ok)
+        .map(|e| e.file_name().to_string_lossy().into_owned())
+        .filter(|n| n != "RELEASE_NOTES.md" && !n.contains(&version))
+        .collect();
+    if !stale.is_empty() {
+        bail!(
+            "dist/ holds files from another version: {} (run `cargo xtask build` to rebuild it)",
+            stale.join(", ")
+        );
+    }
+    let changed = shell::output("git status --porcelain")?;
+    if !changed.is_empty() {
+        bail!(
+            "the build modified tracked files; commit them, push, and publish again:
+{changed}"
+        );
+    }
+    note("dist/ matches the version and the tree is still clean");
+
     header("release notes");
     let notes_path = write_release_notes(cfg, &version)?;
     note(&format!("{}", notes_path.display()));
