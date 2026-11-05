@@ -83,7 +83,9 @@ repository root (see `.env.example`) for token-style variables such as
 logins (`gh auth login`, `glab auth login`, `cargo login`, `gem signin`).
 
 Missing tools or variables stop the release with a message; `--skip <publisher>` opts out
-explicitly. `--dry-run` prints every command instead of running it.
+explicitly. `--dry-run` prints every command instead of running it. If a publisher fails
+after the tag and crates.io succeeded, fix the cause and re-run just that step with
+`cargo xtask publish --only <publisher>` (no new tag, no rebuild, uses the existing `dist/`).
 
 Builds are per host: a Windows run produces Windows libraries. For a multi-platform
 release run `cargo xtask build` on each OS (or in CI) and upload the combined `dist/`,

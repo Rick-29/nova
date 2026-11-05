@@ -82,6 +82,10 @@ struct PublishArgs {
     /// Skip these publishers by name (repeatable), e.g. `--skip gitlab`.
     #[arg(long = "skip")]
     skip: Vec<String>,
+    /// Re-run only these publishers (repeatable) after a partial failure; implies
+    /// `--skip-check --skip-build` and leaves the tag, crates.io and target uploads alone.
+    #[arg(long = "only")]
+    only: Vec<String>,
 }
 
 fn main() {
@@ -412,12 +416,19 @@ fn publish(cfg: &Config, vars: &Vars, args: &PublishArgs) -> Result<()> {
     let tag = vars.get("tag").unwrap().to_string();
     let dry = args.dry_run;
 
-    if args.skip_check {
+    let resume = !args.only.is_empty();
+    if resume {
+        warn(&format!(
+            "resuming: only publisher(s) {}",
+            args.only.join(", ")
+        ));
+    }
+    if args.skip_check || resume {
         warn("check skipped on request");
     } else {
         check(cfg, vars, &CheckArgs::default())?;
     }
-    if args.skip_build {
+    if args.skip_build || resume {
         warn("build skipped on request; using the existing dist/");
     } else {
         build(cfg, vars, &BuildArgs::default())?;
@@ -466,16 +477,18 @@ fn publish(cfg: &Config, vars: &Vars, args: &PublishArgs) -> Result<()> {
         .set("dist_files", quoted.join(" "))
         .set("notes", notes_path.to_string_lossy().replace('\\', "/"));
 
-    header(&format!("tag {tag}"));
-    git::create_tag(&tag, &format!("{} {version}", cfg.project.crate_name), dry)?;
-    git::push(&cfg.project, &tag, dry)?;
+    if !resume {
+        header(&format!("tag {tag}"));
+        git::create_tag(&tag, &format!("{} {version}", cfg.project.crate_name), dry)?;
+        git::push(&cfg.project, &tag, dry)?;
 
-    header("crates.io");
-    let cmd = "cargo publish --workspace";
-    if dry {
-        note(&format!("[dry-run] {cmd}"));
-    } else {
-        run(cmd, &BTreeMap::new(), None)?;
+        header("crates.io");
+        let cmd = "cargo publish --workspace";
+        if dry {
+            note(&format!("[dry-run] {cmd}"));
+        } else {
+            run(cmd, &BTreeMap::new(), None)?;
+        }
     }
 
     for target in cfg
@@ -483,7 +496,7 @@ fn publish(cfg: &Config, vars: &Vars, args: &PublishArgs) -> Result<()> {
         .iter()
         .filter(|t| t.enabled && !t.publish.is_empty())
     {
-        if !runs_here(&target.only_on) {
+        if !runs_here(&target.only_on) || resume {
             continue;
         }
         header(&format!("publish target {}", target.name));
@@ -499,7 +512,7 @@ fn publish(cfg: &Config, vars: &Vars, args: &PublishArgs) -> Result<()> {
 
     for publisher in cfg.publishers.iter().filter(|p| p.enabled) {
         header(&format!("publisher {}", publisher.name));
-        if args.skip.contains(&publisher.name) {
+        if args.skip.contains(&publisher.name) || (resume && !args.only.contains(&publisher.name)) {
             note("skipped on request");
             continue;
         }
