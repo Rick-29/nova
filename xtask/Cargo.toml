@@ -1,0 +1,16 @@
+[package]
+name = "xtask"
+version = "0.0.0"
+edition = "2024"
+publish = false
+description = "Release automation for nova-ta: `cargo xtask check|build|publish|bump`."
+
+[dependencies]
+anyhow = "1"
+clap = { version = "4", features = ["derive"] }
+glob = "0.3"
+regex = "1"
+serde = { version = "1", features = ["derive"] }
+shlex = "1"
+toml = "0.8"
+zip = { version = "2", default-features = false, features = ["deflate"] }

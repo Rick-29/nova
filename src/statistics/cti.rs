@@ -1,7 +1,10 @@
 use nova_bindings_macros::{Bindings, bindings};
 use nova_ta_core::{Indicator, Num, Window, math_support};
 
-use crate::{error::{NovaError, NovaResult}, helpers::{sum, w_sum}};
+use crate::{
+    error::{NovaError, NovaResult},
+    helpers::{sum, w_sum},
+};
 
 math_support!(math, NovaError::number, T);
 
@@ -64,17 +67,14 @@ impl<T: Num> Cti<T> {
     /// Returns `NovaError::InvalidPeriod` when `period < 2`.
     pub fn new(period: usize) -> NovaResult<Self> {
         if period < 2 {
-            return Err(NovaError::InvalidPeriod)
+            return Err(NovaError::InvalidPeriod);
         }
         let mut y = Window::new(period);
-        (1..(period +1)).into_iter().for_each(|e| {
+        (1..(period + 1)).into_iter().for_each(|e| {
             y.push(T::from_usize(e));
         });
         let x = Window::new(period);
-        Ok(Self {
-            x, 
-            y
-        })
+        Ok(Self { x, y })
     }
 }
 
@@ -96,13 +96,13 @@ impl<T: Num> Indicator for Cti<T> {
         self.x.push(input);
         let n = self.x.len();
         if n == 1 {
-            return Ok(T::zero())
+            return Ok(T::zero());
         }
 
         // For y = 1, 2, ..., n:
         // n * sum(y^2) - sum(y)^2 = n^2 * (n^2 - 1) / 12.
-        let y_det = math!(((n * n * (n * n -1)) / 12) as usize);
-        let y_sum = math!((( n * ( n + 1 ) ) / 2) as usize);
+        let y_det = math!(((n * n * (n * n - 1)) / 12) as usize);
+        let y_sum = math!(((n * (n + 1)) / 2) as usize);
 
         let x_sum = sum(&self.x)?;
         let xy_sum = math!(n as usize * w_sum(&self.x, &self.y)?);
@@ -135,8 +135,6 @@ impl<T: Num> Indicator for Cti<T> {
         self.x.is_full()
     }
 }
-
-
 
 #[cfg(test)]
 mod tests {

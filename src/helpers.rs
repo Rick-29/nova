@@ -15,7 +15,8 @@ pub(crate) fn sum<T: Num>(w: &Window<T>) -> NovaResult<T> {
 
 pub(crate) fn w_sum<T: Num>(bias: &Window<T>, weights: &Window<T>) -> NovaResult<T> {
     let mut res = T::zero();
-    for (b ,w) in bias.iter().zip(weights.iter()) {
+    /// Using rev_iter so elements are aligned from newest to oldest even if not of the same length
+    for (b, w) in bias.rev_iter().zip(weights.rev_iter()) {
         res = math!(res + (*b) * (*w));
     }
     Ok(res)

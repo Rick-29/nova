@@ -1,0 +1,193 @@
+# Release manifest for `cargo xtask` (see xtask/ and RELEASING.md).
+#
+# Placeholders usable in every string:
+#   {version}      [package].version from Cargo.toml (single source of truth)
+#   {tag}          release tag, from [project].tag
+#   {crate}        [project].crate            {lib_name}     [project].lib_name
+#   {lib}          target/release/<cdylib>     {lib_file}     just the file name
+#   {lib_import}   Windows import lib (.dll.lib), same as {lib} elsewhere
+#   {static_lib}   target/release/<staticlib>
+#   {os}           windows | linux | macos     {arch}         x86_64 | aarch64 | ...
+#   {platform}     {os}-{arch}                 {jna_platform} win32-x86-64, darwin-aarch64, ...
+#   {target}       target name                 {out}          bindings/<target>
+#   {dist}         dist directory
+#   publish only:  {dist_files} (quoted list of dist/ files)  {notes} (release notes file)
+#
+# Steps are either a command string or a table with one of
+#   run / copy+to / mkdir / remove   plus optional  env, cwd, only_on, optional.
+# Commands are split like a shell would but NOT run through one: no globs, no `&&`.
+
+[project]
+crate = "nova-ta"
+lib_name = "nova_ta"
+branch = "master"
+remotes = ["origin", "main"]     # GitLab, GitHub: both must hold the released commit
+tag = "v{version}"
+dist = "dist"
+changelog = "CHANGELOG.md"       # optional; falls back to the git log since the previous tag
+
+[check]
+fmt = true
+clippy = "cargo clippy --workspace --all-targets --all-features -- -D warnings"
+test = "cargo test --workspace --all-features"
+doc = "cargo doc --workspace --no-deps --all-features --lib"
+publish_dry_run = true
+
+# ------------------------------------------------------------------ Python (PyO3 wheel)
+
+[[target]]
+name = "python"
+requires = ["maturin"]
+steps = [
+  "cargo run --release --bin stub_gen --features python-stubs",
+  "maturin build --release --out {out}",
+]
+artifacts = ["{out}/nova_ta-{version}-*.whl"]
+archive = false
+dist = ["{out}/nova_ta-{version}-*.whl"]
+
+# ------------------------------------------------------------------ UniFFI family
+# Each target rebuilds the cdylib (a no-op when cached), copies it next to the
+# generated code, then runs the generator against the copy so later targets
+# overwriting target/release/ cannot interfere.
+
+[[target]]
+name = "kotlin"
+version_files = [{ path = "packaging/kotlin/build.gradle.kts", pattern = 'version = "{version}"' }]
+steps = [
+  "cargo rustc --release --lib --no-default-features --features uniffi --crate-type cdylib",
+  { mkdir = "{out}/src/main/resources/{jna_platform}" },
+  { copy = "{lib}", to = "{out}/src/main/resources/{jna_platform}/" },
+  "cargo run --release --no-default-features --features uniffi-cli --bin uniffi-bindgen -- generate --library {out}/src/main/resources/{jna_platform}/{lib_file} --language kotlin --out-dir {out}/src/main/kotlin",
+  { copy = "packaging/kotlin/build.gradle.kts", to = "{out}/" },
+  { copy = "packaging/kotlin/settings.gradle.kts", to = "{out}/" },
+]
+artifacts = ["{out}/src/main/kotlin/uniffi/nova_ta/nova_ta.kt", "{out}/src/main/resources/{jna_platform}/{lib_file}"]
+
+[[target]]
+name = "swift"
+steps = [
+  "cargo rustc --release --lib --no-default-features --features uniffi --crate-type cdylib",
+  { copy = "{lib}", to = "{out}/" },
+  "cargo run --release --no-default-features --features uniffi-cli --bin uniffi-bindgen -- generate --library {out}/{lib_file} --language swift --out-dir {out}/Sources/NovaTa",
+  { copy = "packaging/swift/Package.swift", to = "{out}/" },
+  # Apple-only: static libs for macOS/iOS wrapped in an XCFramework (needs Xcode).
+  { run = "rustup target add aarch64-apple-darwin aarch64-apple-ios aarch64-apple-ios-sim", only_on = ["macos"] },
+  { run = "cargo rustc --release --lib --no-default-features --features uniffi --crate-type staticlib --target aarch64-apple-darwin", only_on = ["macos"] },
+  { run = "cargo rustc --release --lib --no-default-features --features uniffi --crate-type staticlib --target aarch64-apple-ios", only_on = ["macos"] },
+  { run = "cargo rustc --release --lib --no-default-features --features uniffi --crate-type staticlib --target aarch64-apple-ios-sim", only_on = ["macos"] },
+  { mkdir = "{out}/include", only_on = ["macos"] },
+  { copy = "{out}/Sources/NovaTa/nova_taFFI.h", to = "{out}/include/nova_taFFI.h", only_on = ["macos"] },
+  { copy = "{out}/Sources/NovaTa/nova_taFFI.modulemap", to = "{out}/include/module.modulemap", only_on = ["macos"] },
+  { run = "xcodebuild -create-xcframework -library target/aarch64-apple-darwin/release/libnova_ta.a -headers {out}/include -library target/aarch64-apple-ios/release/libnova_ta.a -headers {out}/include -library target/aarch64-apple-ios-sim/release/libnova_ta.a -headers {out}/include -output {out}/NovaTaFFI.xcframework", only_on = ["macos"] },
+]
+artifacts = ["{out}/Sources/NovaTa/nova_ta.swift", "{out}/Sources/NovaTa/nova_taFFI.h"]
+
+[[target]]
+name = "ruby"
+version_files = [{ path = "packaging/ruby/nova_ta.gemspec", pattern = 'spec.version = "{version}"' }]
+steps = [
+  "cargo rustc --release --lib --no-default-features --features uniffi --crate-type cdylib",
+  { mkdir = "{out}/lib" },
+  { copy = "{lib}", to = "{out}/lib/" },
+  "cargo run --release --no-default-features --features uniffi-cli --bin uniffi-bindgen -- generate --library {out}/lib/{lib_file} --language ruby --out-dir {out}/lib",
+  { copy = "packaging/ruby/nova_ta.gemspec", to = "{out}/" },
+]
+artifacts = ["{out}/lib/nova_ta.rb"]
+# To push to rubygems.org, build the gem on the release machine and uncomment:
+# publish = [{ run = "gem build nova_ta.gemspec", cwd = "{out}" }, { run = "gem push nova_ta-{version}.gem", cwd = "{out}" }]
+
+[[target]]
+name = "python-uniffi"
+enabled = false   # the PyO3 wheel is the supported Python package; this is a ctypes cross-check
+steps = [
+  "cargo rustc --release --lib --no-default-features --features uniffi --crate-type cdylib",
+  { copy = "{lib}", to = "{out}/" },
+  "cargo run --release --no-default-features --features uniffi-cli --bin uniffi-bindgen -- generate --library {out}/{lib_file} --language python --out-dir {out}",
+]
+artifacts = ["{out}/nova_ta.py"]
+
+# Java via uniffi-bindgen-java (IronCoreLabs). Uses the JDK 22+ FFM API, no JNA.
+#   cargo install uniffi-bindgen-java --git https://github.com/IronCoreLabs/uniffi-bindgen-java
+[[target]]
+name = "java"
+requires = ["uniffi-bindgen-java"]
+version_files = [{ path = "packaging/java/build.gradle.kts", pattern = 'version = "{version}"' }]
+steps = [
+  "cargo rustc --release --lib --no-default-features --features uniffi --crate-type cdylib",
+  { mkdir = "{out}/src/main/resources/{jna_platform}" },
+  { copy = "{lib}", to = "{out}/src/main/resources/{jna_platform}/" },
+  "uniffi-bindgen-java generate {out}/src/main/resources/{jna_platform}/{lib_file} --out-dir {out}/src/main/java",
+  { copy = "packaging/java/build.gradle.kts", to = "{out}/" },
+  { copy = "packaging/java/settings.gradle.kts", to = "{out}/" },
+]
+artifacts = ["{out}/src/main/java/uniffi/nova_ta/*.java"]
+
+# C++ via uniffi-bindgen-cpp (NordSecurity). Generates <lib>.hpp / <lib>.cpp (C++20).
+#   cargo install uniffi-bindgen-cpp --git https://github.com/NordSecurity/uniffi-bindgen-cpp --tag v0.10.0+v0.31.0
+# DISABLED: the newest release targets UniFFI 0.31 and cannot read the 0.32 metadata
+# this crate emits ("invalid utf-8 sequence" while extracting metadata). Flip to
+# `enabled = true` once a UniFFI 0.32 tag exists, or run `cargo xtask build -t cpp`.
+[[target]]
+name = "cpp"
+enabled = false
+requires = ["uniffi-bindgen-cpp"]
+version_files = [{ path = "packaging/cpp/CMakeLists.txt", pattern = 'project(nova_ta VERSION {version}' }]
+steps = [
+  "cargo rustc --release --lib --no-default-features --features uniffi --crate-type cdylib",
+  { mkdir = "{out}/lib" },
+  { copy = "{lib}", to = "{out}/lib/" },
+  { copy = "{lib_import}", to = "{out}/lib/", optional = true },
+  "uniffi-bindgen-cpp --library {out}/lib/{lib_file} --out-dir {out}/src",
+  { copy = "packaging/cpp/CMakeLists.txt", to = "{out}/" },
+]
+artifacts = ["{out}/src/nova_ta.hpp", "{out}/src/nova_ta.cpp"]
+
+# ------------------------------------------------------------------ JavaScript
+# Both need extra tooling (matching wasm-bindgen-cli / napi CLI); enable when set up.
+
+[[target]]
+name = "wasm"
+enabled = false
+requires = ["wasm-bindgen"]
+steps = [
+  "rustup target add wasm32-unknown-unknown",
+  "cargo rustc --release --lib --no-default-features --features wasm --crate-type cdylib --target wasm32-unknown-unknown",
+  "wasm-bindgen --target web --out-dir {out} target/wasm32-unknown-unknown/release/nova_ta.wasm",
+]
+artifacts = ["{out}/nova_ta.js", "{out}/nova_ta_bg.wasm"]
+
+[[target]]
+name = "node"
+enabled = false
+steps = [
+  "cargo rustc --release --lib --no-default-features --features napi --crate-type cdylib",
+  { copy = "{lib}", to = "{out}/nova_ta.node" },
+]
+artifacts = ["{out}/nova_ta.node"]
+
+# ------------------------------------------------------------------ Publishers
+# Run after the tag is pushed and `cargo publish` succeeded. Each one is skipped
+# with `cargo xtask publish --skip <name>`; missing tools/env are hard errors.
+
+[[publisher]]
+name = "github"
+requires = ["gh"]
+steps = [
+  "gh release create {tag} {dist_files} --repo Rick-29/nova --title \"{crate} {version}\" --notes-file {notes} --verify-tag",
+]
+
+[[publisher]]
+name = "gitlab"
+requires = ["glab"]
+env = ["GITLAB_HOST"]     # export GITLAB_HOST=gitlab.chipatrade.com ; glab auth login --hostname $GITLAB_HOST
+steps = [
+  "glab release create {tag} {dist_files} --repo Rick-29/nova --name \"{crate} {version}\" --notes-file {notes}",
+]
+
+[[publisher]]
+name = "pypi"
+requires = ["maturin"]
+env = ["MATURIN_PYPI_TOKEN"]
+files = "{dist}/*.whl"
+steps = ["maturin upload --skip-existing {files}"]

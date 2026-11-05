@@ -1,5 +1,7 @@
 # Compiling the bindings
 
+> Automated builds and releases: `cargo xtask build` / `cargo xtask publish`, see [RELEASING.md](RELEASING.md). The commands below are what the targets in `release.toml` run.
+
 Every language binding is a Cargo feature of `nova-ta`, and every build below writes its output to `bindings/<language>/`, which is git-ignored. Delete the folder at any time; nothing in it is source.
 
 | Language | Feature | Tool | Output |

@@ -1,5 +1,5 @@
 use nova_bindings_macros::{Bindings, bindings};
-use nova_ta_core::{Indicator, Num, Window, math_support, };
+use nova_ta_core::{Indicator, Num, Window, math_support};
 
 use crate::{
     error::{NovaError, NovaResult},
@@ -92,7 +92,7 @@ impl<T: Num> Indicator for Lsma<T> {
             .try_fold(T::zero(), |acc, e| add(&acc, e))?;
         // sum(x * y)
         let mut xy_sum = T::zero();
-        
+
         for (i, &value) in self.candles.iter().enumerate() {
             let x = math!((i + 1) as usize);
             xy_sum = math!(xy_sum + x * value);

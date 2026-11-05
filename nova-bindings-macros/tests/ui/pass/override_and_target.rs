@@ -1,6 +1,6 @@
 #![allow(unexpected_cfgs, dead_code)]
 
-use nova_bindings_macros::{Bindings, bindings, bindings_error};
+use nova_bindings_macros::{bindings, bindings_error};
 
 pub trait Indicator {
     type Input;

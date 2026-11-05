@@ -7,6 +7,7 @@ use pyo3::prelude::*;
 
 pub use crate::error::PyNovaError;
 use crate::filters::alma::PyAlma;
+use crate::filters::gaussian::PyGaussian;
 use crate::filters::kama::PyKama;
 use crate::filters::lsma::PyLsma;
 pub use crate::filters::ultimate_smoother::PyUltimateSmoother;
@@ -18,6 +19,7 @@ use crate::structure::ker::PyKer;
 fn nova_ta(m: &Bound<'_, PyModule>) -> PyResult<()> {
     // Filters
     m.add_class::<PyAlma>()?;
+    m.add_class::<PyGaussian>()?;
     m.add_class::<PyKama>()?;
     m.add_class::<PyLsma>()?;
     m.add_class::<PyUltimateSmoother>()?;

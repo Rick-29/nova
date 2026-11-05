@@ -33,17 +33,18 @@ pub(crate) mod volatility;
 
 /// Error type and result alias shared by all indicators.
 pub mod error;
+/// Minimal functions that might be useful.
+pub mod helpers;
 /// Python extension module (feature `python`).
 #[cfg(feature = "python")]
 pub mod python;
-/// Minimal functions that might be useful.
-pub mod helpers;
 
 pub use filters::alma::Alma;
+pub use filters::gaussian::Gaussian;
 pub use filters::kama::Kama;
 pub use filters::lsma::Lsma;
 pub use filters::ultimate_smoother::UltimateSmoother;
-pub use filters::wma::{Wma, LinearWma};
+pub use filters::wma::{LinearWma, Wma};
 
 pub use structure::ker::Ker;
 

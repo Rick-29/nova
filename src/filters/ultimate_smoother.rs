@@ -1,7 +1,7 @@
 use nova_bindings_macros::{Bindings, bindings};
 use nova_ta_core::{Indicator, Real, Window, real_support};
 
-use crate::error::{NovaResult, NovaError};
+use crate::error::{NovaError, NovaResult};
 
 real_support!(real, NovaError::number, R);
 
@@ -71,9 +71,8 @@ pub struct UltimateSmoother<R: Real> {
     c2: R,
     c3: R,
     x: Window<R>,
-    us: Window<R>
+    us: Window<R>,
 }
-
 
 #[bindings]
 impl<R: Real> UltimateSmoother<R> {
@@ -98,15 +97,9 @@ impl<R: Real> UltimateSmoother<R> {
         let f = real!(sqrt(2) * PI / period as usize);
         let a1 = real!(exp(-f));
         let c2 = real!(2 * a1 * cos(f));
-        let c3 = real!(- a1 ** 2);
+        let c3 = real!(-a1 * *2);
         let c1 = real!((1 + c2 - c3) / 4);
-        Ok(Self {
-          c1,
-          c2,
-          c3, 
-          x,
-          us
-        })
+        Ok(Self { c1, c2, c3, x, us })
     }
 }
 
@@ -115,7 +108,7 @@ impl<R: Real> Indicator for UltimateSmoother<R> {
     type Input = R;
     type Output = R;
     type Error = NovaError;
-    
+
     /// Processes a new input and returns the smoothed output.
     ///
     /// The first two updates return the input unchanged. Once three inputs
@@ -125,7 +118,7 @@ impl<R: Real> Indicator for UltimateSmoother<R> {
         self.x.push(input);
         let us3 = match self.x.len() {
             // 0 is unreachable but for considering edge case
-            0 | 1 | 2 => input,
+            0..=2 => input,
             _ => {
                 let p0 = self.x.get(0).ok_or(NovaError::never())?;
                 let p1 = self.x.get(1).ok_or(NovaError::never())?;
@@ -134,8 +127,7 @@ impl<R: Real> Indicator for UltimateSmoother<R> {
                 // US = (1 - c1) * x + (2 * c1 - c2) * x[1] - (c1 + c3) * x[2]
                 //      + c2 * US[1] + c3 * US[2]
                 real!(
-                    (1 - self.c1) * input
-                        + (2 * self.c1 - self.c2) * (*p1)
+                    (1 - self.c1) * input + (2 * self.c1 - self.c2) * (*p1)
                         - (self.c1 + self.c3) * (*p0)
                         + self.c2 * (*us1)
                         + self.c3 * (*us0)
@@ -144,7 +136,7 @@ impl<R: Real> Indicator for UltimateSmoother<R> {
         };
         // Store the result for use in subsequent recursive updates.
         self.us.push(us3);
-        
+
         Ok(us3)
     }
 

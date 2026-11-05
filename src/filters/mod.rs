@@ -12,7 +12,8 @@
 //! `volatility`). KAMA uses KER internally, but KER itself is not a filter.
 
 pub mod alma;
+pub mod gaussian;
 pub mod kama;
 pub mod lsma;
-pub mod wma;
 pub mod ultimate_smoother;
+pub mod wma;

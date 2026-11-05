@@ -6,6 +6,7 @@ import typing
 __all__ = [
     "Alma",
     "Cti",
+    "Gaussian",
     "Kama",
     "Ker",
     "LinearWma",
@@ -98,6 +99,70 @@ class Cti:
         r"""
         Returns `true` when the price window contains `period` observations.
         """
+
+@typing.final
+class Gaussian:
+    r"""
+    Finite-window Gaussian smoothing filter.
+    
+    Smooths a numeric time series by weighting recent observations according
+    to a Gaussian kernel. The weights are symmetric around the center of the
+    configured window and normalized to sum to one.
+    
+    # Parameters
+    
+    - `period`: Number of observations in the kernel. Must be a positive, greater than 2,
+      odd integer so the kernel has a central observation.
+    - `sigma`: Positive, finite Gaussian standard deviation controlling the
+      spread of the weights. A smaller value concentrates weight near the
+      center; a larger value distributes weight more broadly.
+    
+    # Calculation
+    
+    For a period `N`, let `r = (N - 1) / 2`. For each integer index
+    `i` from `-r` to `r`, the raw weight is:
+    
+    ```text
+    w[i] = exp(-i^2 / (2 * sigma^2))
+    ```
+    
+    The weights are normalized by dividing each raw weight by their sum.
+    
+    The output is the weighted sum of the available input observations.
+    During warmup, the weights used are renormalized to sum to one so constant
+    inputs remain constant.
+    
+    # Output
+    
+    Returns a smoothed value in the same units as the input. The output can
+    therefore be plotted directly over a price series.
+    
+    # Readiness
+    
+    `ready()` returns `true` once `period` observations have been received.
+    
+    # Limitations
+    
+    This is a finite-window filter. It uses only the most recent `period`
+    observations and does not use future data.
+    """
+    def __new__(cls, period: builtins.int, sigma: builtins.float) -> Gaussian:
+        r"""
+        Creates a Gaussian filter with the specified period and sigma.
+        
+        Returns an error if the period is zero or even, or if sigma is
+        non-finite or not strictly positive.
+        """
+    def update(self, input: builtins.float) -> builtins.float:
+        r"""
+        Adds an input and returns its Gaussian-smoothed value.
+        
+        During warmup, the available weights are renormalized so their sum
+        is one. Once the input window is full, the complete Gaussian kernel
+        is applied.
+        """
+    def reset(self) -> None: ...
+    def ready(self) -> builtins.bool: ...
 
 @typing.final
 class Kama:

@@ -31,7 +31,7 @@ math_support!(math, NovaError::number, T);
 /// result. This constructor does not validate those conditions.
 pub struct Wma<T: Num> {
     x: Window<T>,
-    weights: Window<T>
+    weights: Window<T>,
 }
 
 impl<T: Num> Wma<T> {
@@ -47,10 +47,7 @@ impl<T: Num> Wma<T> {
     pub fn new(weights: Window<T>) -> NovaResult<Self> {
         NovaError::period(weights.len())?;
         let x = Window::new(weights.len());
-        Ok(Self {
-            x,
-            weights
-        })
+        Ok(Self { x, weights })
     }
 }
 
@@ -68,7 +65,7 @@ impl<T: Num> Indicator for Wma<T> {
         let mut ws = T::zero();
         let mut xs = T::zero();
         for (i, w) in self.x.rev_iter().zip(self.weights.rev_iter()) {
-            ws = math!(ws +(*w));
+            ws = math!(ws + (*w));
             xs = math!(xs + (*i) * (*w));
         }
 
@@ -78,7 +75,7 @@ impl<T: Num> Indicator for Wma<T> {
     fn reset(&mut self) {
         self.x.clear();
     }
-    
+
     fn ready(&self) -> bool {
         self.x.is_full()
     }
@@ -108,7 +105,7 @@ impl<T: Num> Indicator for Wma<T> {
 #[derive(Bindings)]
 #[bindings(error = NovaError)]
 pub struct LinearWma<T: Num> {
-    wma: Wma<T>
+    wma: Wma<T>,
 }
 
 #[bindings]
@@ -119,13 +116,11 @@ impl<T: Num> LinearWma<T> {
     pub fn new(period: usize) -> NovaResult<Self> {
         NovaError::period(period)?;
         let mut w = Window::new(period);
-        (1..(period +1)).into_iter().for_each(|e| {
+        (1..(period + 1)).into_iter().for_each(|e| {
             w.push(T::from_usize(e));
         });
         let wma = Wma::new(w)?;
-        Ok(Self {
-            wma
-        })
+        Ok(Self { wma })
     }
 }
 
@@ -148,8 +143,6 @@ impl<T: Num> Indicator for LinearWma<T> {
         self.wma.ready()
     }
 }
-
-
 
 #[cfg(test)]
 mod tests {

@@ -38,6 +38,14 @@ impl NovaError {
     pub fn window(idx: usize, len: usize) -> Self {
         Self::WindowIdx(idx, len)
     }
+
+    pub fn invalid(received: impl ToString, expected: impl ToString) -> Self {
+        Self::InvalidInput(format!(
+            "Got: {}, error: {}",
+            received.to_string(),
+            expected.to_string()
+        ))
+    }
 }
 
 pub type NovaResult<T> = Result<T, NovaError>;

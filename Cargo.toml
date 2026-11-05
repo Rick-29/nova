@@ -1,6 +1,6 @@
 [package]
 name = "nova-ta"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2024"
 description = "Core traits and state primitives for streaming technical-analysis indicators."
 license = "MIT"
@@ -12,7 +12,7 @@ keywords = ["technical-analysis", "indicators", "trading", "streaming"]
 categories = ["finance", "algorithms"]
 
 [workspace]
-members = [".", "nova-bindings-macros", "nova-bindings-macros/integration"]
+members = [".", "nova-bindings-macros", "nova-bindings-macros/integration", "xtask"]
 
 [features]
 # default = ["python", "python-stubs"]
@@ -29,7 +29,7 @@ napi = ["dep:napi", "dep:napi-derive"]
 nova-ta-core = "0.1.6"
 thiserror = "2.0.21"
 nova-bindings-macros = { version = "0.1.0", path = "nova-bindings-macros" }
-pyo3 = { version = "0.30.1", optional = true, features = ["multiple-pymethods"] }
+pyo3 = { version = "0.30.1", optional = true, features = ["multiple-pymethods", "abi3-py310"] }
 pyo3-stub-gen = { version = "0.23.2", optional = true }
 uniffi = { version = "0.32.2", optional = true }
 wasm-bindgen = { version = "0.2.129", optional = true }

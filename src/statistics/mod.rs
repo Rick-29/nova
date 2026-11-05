@@ -10,5 +10,4 @@
 //! (see `volatility`; standard deviation used as a volatility gauge may live
 //! there instead).
 //!
-//! No indicators yet.
 pub mod cti;
